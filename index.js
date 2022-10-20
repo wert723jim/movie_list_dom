@@ -6,10 +6,12 @@ const dataPanel = document.querySelector('#data-panel')
 const searchForm = document.querySelector('#search-form')
 const searchInput = document.querySelector('#search-input')
 const paginator = document.querySelector('#paginator')
+const displayButton = document.querySelector('#display-btn')
 const movies = []
 // show 12 movies per page
 const MOVIES_PER_PAGE = 12
 let filteredMovies = []
+let displayMode = 'list'
 
 
 // fetch movies information
@@ -32,23 +34,37 @@ axios
 // show movies
 function renderMovieList(data) {
   let rawHTML = ''
-  data.forEach((item) => {
-    rawHTML += `
-    <div class="col-sm-3">
-      <div class="mb-2">
-        <div class="card">
-          <img src="${POSTER_URL + item.image}" class="card-img-top" alt="Movie Poster">
-          <div class="card-body">
-            <h5 class="card-title">${item.title}</h5>
+  if(displayMode === 'card') {
+    data.forEach((item) => {
+      rawHTML += `
+        <div class="col-sm-3">
+          <div class="mb-2">
+            <div class="card">
+              <img src="${POSTER_URL + item.image}" class="card-img-top" alt="Movie Poster">
+              <div class="card-body">
+                <h5 class="card-title">${item.title}</h5>
+              </div>
+              <div class="card-footer">
+                <button class="btn btn-primary btn-show-movie" data-bs-toggle="modal" data-bs-target="#movie-modal" data-id="${item.id}">More</button>
+                <button class="btn btn-info btn-add-favorite" data-id="${item.id}">+</button>
+              </div>
+            </div>
           </div>
-          <div class="card-footer">
-            <button class="btn btn-primary btn-show-movie" data-bs-toggle="modal" data-bs-target="#movie-modal" data-id="${item.id}">More</button>
+        </div>`
+    })
+  } else if(displayMode === 'list') {
+    data.forEach((item) => {
+      rawHTML +=`
+        <div class="col-12 mb-3 d-flex justify-content-between text-center border-top pt-2">
+          <h5>${item.title}</h5>
+          <div>
+            <button class="btn btn-primary btn-show-movie" data-bs-toggle="modal"
+              data-bs-target="#movie-modal" data-id="${item.id}">More</button>
             <button class="btn btn-info btn-add-favorite" data-id="${item.id}">+</button>
           </div>
-        </div>
-      </div>
-    </div>`
-  })
+        </div>`
+    })
+  } 
   dataPanel.innerHTML = rawHTML
 }
 
@@ -143,4 +159,14 @@ paginator.addEventListener('click', function onPaginatorClicked(event) {
   }
   const page = Number(event.target.dataset.page)
   renderMovieList(getMovieByPage(page))
+})
+
+displayButton.addEventListener('click', function changeDisplayMode(event) {
+  if(event.target.matches('.display-list')) {
+    displayMode = 'list'
+  } else if (event.target.matches('.display-card')) {
+    displayMode = 'card'
+  }
+  renderMovieList(getMovieByPage(1))
+  // renderPaginator(movies.length)
 })
