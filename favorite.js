@@ -6,6 +6,10 @@ const dataPanel = document.querySelector('#data-panel')
 
 const movies = JSON.parse(localStorage.getItem('favoriteMovies')) || []
 
+const MOVIES_PER_PAGE = 12
+
+let filteredMovies = []
+
 function renderMovieList(data) {
   let rawHTML = ''
   data.forEach((item) => {
@@ -60,7 +64,29 @@ function removeFromFavorite(id) {
   renderMovieList(movies)
 }
 
+// count page
+function renderPaginator(amount) {
+  const numberOfPages = Math.ceil(amount / MOVIES_PER_PAGE)
+  let rawHTML = ''
+  for (let page = 1; page <= numberOfPages; page++) {
+    rawHTML += `
+    <li class="page-item">
+    <a class="page-link" href="#" data-page="${page}">${page}</a>
+    </li>
+    `
+  }
+  paginator.innerHTML = rawHTML
+}
 
+// show selected page movie 
+function getMovieByPage(page) {
+  const data = filteredMovies.length ? filteredMovies : movies
+  const startIndex = (page - 1) * MOVIES_PER_PAGE
+  return data.slice(startIndex, startIndex + MOVIES_PER_PAGE)
+}
+
+renderMovieList(getMovieByPage(1))
+renderPaginator(movies.length)
 
 dataPanel.addEventListener('click', function onPanelClicked(event) {
   if (event.target.matches('.btn-show-movie')) {
@@ -70,4 +96,11 @@ dataPanel.addEventListener('click', function onPanelClicked(event) {
   }
 })
 
-renderMovieList(movies)
+// paginator button click
+paginator.addEventListener('click', function onPaginatorClicked(event) {
+  if (event.target.tagName !== 'A') {
+    return
+  }
+  const page = Number(event.target.dataset.page)
+  renderMovieList(getMovieByPage(page))
+})
